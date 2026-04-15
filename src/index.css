@@ -28,7 +28,11 @@
 
 .nvidia-sidebar-item.active::before {
   content: '';
-  @apply absolute left-0 top-0 bottom-0 w-1 bg-nvidia-green;
+  @apply absolute bg-nvidia-green;
+  /* Mobile: Bottom horizontal line */
+  @apply left-0 right-0 bottom-0 h-0.5;
+  /* Desktop: Left vertical line */
+  @apply md:left-0 md:right-auto md:top-0 md:bottom-0 md:w-1 md:h-auto;
 }
 
 .nvidia-btn-primary {
