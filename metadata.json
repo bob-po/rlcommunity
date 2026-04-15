@@ -1,0 +1,5 @@
+{
+  "name": "OmniRL: NVIDIA-Style Reinforcement Learning Platform",
+  "description": "A high-performance demonstration platform for reinforcement learning models, featuring real-time visualization and NVIDIA-inspired aesthetics.",
+  "requestFramePermissions": []
+}
