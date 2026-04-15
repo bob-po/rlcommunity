@@ -21,6 +21,7 @@ export default function AIAssistant({ isOpen, setIsOpen }: AIAssistantProps) {
   ]);
   const [inputValue, setInputValue] = useState('');
   const chatEndRef = useRef<HTMLDivElement>(null);
+  const isDragging = useRef(false);
 
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -67,11 +68,21 @@ export default function AIAssistant({ isOpen, setIsOpen }: AIAssistantProps) {
             exit={{ opacity: 0, scale: 0.5 }}
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.9 }}
-            onClick={toggleOpen}
-            className="fixed bottom-20 md:bottom-10 right-4 md:right-10 z-50 cursor-grab active:cursor-grabbing"
-            onDragEnd={(_, info) => {
-              // Optional: constrain or save position
+            onDragStart={() => {
+              isDragging.current = true;
             }}
+            onDragEnd={() => {
+              // Use a small timeout to ensure the tap event fires before we reset the flag
+              setTimeout(() => {
+                isDragging.current = false;
+              }, 100);
+            }}
+            onTap={() => {
+              if (!isDragging.current) {
+                toggleOpen();
+              }
+            }}
+            className="fixed bottom-20 md:bottom-10 right-4 md:right-10 z-50 cursor-grab active:cursor-grabbing"
           >
             <div className="relative group">
               <div className="absolute -inset-1 bg-gradient-to-r from-nvidia-green to-blue-500 rounded-full blur opacity-40 group-hover:opacity-100 transition duration-1000 group-hover:duration-200 animate-pulse"></div>

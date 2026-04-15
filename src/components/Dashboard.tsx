@@ -42,6 +42,12 @@ const models = [
   { id: '4', name: 'TD3_Bipedal_v4', algo: 'TD3', date: '2024-03-01', reward: '1120.3' },
 ];
 
+const recentProjects = [
+  { id: 'p1', name: '四足机器人楼梯穿越', status: '训练中', progress: 65, type: 'quadruped' },
+  { id: 'p2', name: '机械臂精准抓取测试', status: '已完成', progress: 100, type: 'arm' },
+  { id: 'p3', name: '无人机室内避障', status: '已暂停', progress: 42, type: 'drone' },
+];
+
 export default function Dashboard({ activeTab, setActiveTab, isGuest, setIsGuest }: DashboardProps) {
   const { user, login } = useAuth();
   const [selectedRobot, setSelectedRobot] = useState<string | null>(null);
@@ -145,18 +151,66 @@ export default function Dashboard({ activeTab, setActiveTab, isGuest, setIsGuest
 
             {/* Library Section */}
             <section>
-              <h3 className="text-2xl font-bold mb-6">推荐模型</h3>
+              <h3 className="text-2xl font-bold mb-6">推荐项目</h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                 {models.map((model) => (
                   <div key={model.id} className="bg-nvidia-gray border border-nvidia-border nvidia-card-hover group cursor-pointer overflow-hidden rounded-sm">
                     <div className="aspect-video relative overflow-hidden">
-                      <img src="https://picsum.photos/seed/physics/400/225" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" referrerPolicy="no-referrer" />
+                      <img src={`https://picsum.photos/seed/project${model.id}/400/225`} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" referrerPolicy="no-referrer" />
                       <div className="absolute inset-0 bg-black/20 group-hover:bg-black/0 transition-colors" />
                     </div>
                     <div className="p-4 bg-nvidia-light-gray flex items-center justify-between">
                       <div>
                         <h4 className="font-bold text-sm">{model.name}</h4>
                         <p className="text-[10px] text-gray-500 uppercase tracking-wider mt-1">{model.algo}</p>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </section>
+
+            {/* Recent Projects Section */}
+            <section>
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-2xl font-bold">最近的项目</h3>
+                <button className="text-nvidia-green text-xs font-bold hover:underline">查看全部</button>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {recentProjects.map((project) => (
+                  <div key={project.id} className="bg-nvidia-gray border border-nvidia-border p-5 rounded-sm nvidia-card-hover cursor-pointer group">
+                    <div className="flex items-start justify-between mb-4">
+                      <div className="w-10 h-10 bg-nvidia-light-gray rounded-sm flex items-center justify-center">
+                        {project.type === 'quadruped' && <Bot className="text-nvidia-green w-6 h-6" />}
+                        {project.type === 'arm' && <Zap className="text-blue-400 w-6 h-6" />}
+                        {project.type === 'drone' && <Mountain className="text-yellow-500 w-6 h-6" />}
+                      </div>
+                      <span className={cn(
+                        "text-[10px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider",
+                        project.status === '训练中' ? "bg-nvidia-green/10 text-nvidia-green border border-nvidia-green/20" :
+                        project.status === '已完成' ? "bg-blue-500/10 text-blue-400 border border-blue-500/20" :
+                        "bg-gray-500/10 text-gray-400 border border-gray-500/20"
+                      )}>
+                        {project.status}
+                      </span>
+                    </div>
+                    <h4 className="font-bold mb-4">{project.name}</h4>
+                    <div className="space-y-2">
+                      <div className="flex justify-between text-[10px] font-bold uppercase tracking-widest text-gray-500">
+                        <span>训练进度</span>
+                        <span>{project.progress}%</span>
+                      </div>
+                      <div className="h-1 bg-nvidia-light-gray rounded-full overflow-hidden">
+                        <motion.div 
+                          initial={{ width: 0 }}
+                          animate={{ width: `${project.progress}%` }}
+                          className={cn(
+                            "h-full transition-all duration-1000",
+                            project.status === '训练中' ? "bg-nvidia-green" :
+                            project.status === '已完成' ? "bg-blue-500" :
+                            "bg-gray-500"
+                          )}
+                        />
                       </div>
                     </div>
                   </div>
