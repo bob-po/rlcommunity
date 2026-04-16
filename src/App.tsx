@@ -4,6 +4,7 @@ import Navbar from '@/components/Navbar';
 import Sidebar from '@/components/Sidebar';
 import AIAssistant from '@/components/AIAssistant';
 import Dashboard from '@/components/Dashboard';
+import LoginModal from '@/components/LoginModal';
 import { Toaster } from '@/components/ui/sonner';
 import { motion, AnimatePresence } from 'motion/react';
 
@@ -18,7 +19,7 @@ const tabTitles: Record<string, string> = {
 };
 
 function AppContent() {
-  const { user } = useAuth();
+  const { user, isLoginModalOpen, setLoginModalOpen } = useAuth();
   const [isGuest, setIsGuest] = useState(false);
   const [activeTab, setActiveTab] = useState('home');
   const [isAIAssistantOpen, setIsAIAssistantOpen] = useState(false);
@@ -58,6 +59,10 @@ function AppContent() {
       <AIAssistant 
         isOpen={isAIAssistantOpen} 
         setIsOpen={setIsAIAssistantOpen} 
+      />
+      <LoginModal 
+        isOpen={isLoginModalOpen} 
+        onClose={() => setLoginModalOpen(false)} 
       />
       <Toaster theme="dark" position="top-right" />
     </div>
