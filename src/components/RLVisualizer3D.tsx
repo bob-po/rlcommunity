@@ -112,7 +112,14 @@ export default function RLVisualizer3D({
   const [projectName, setProjectName] = useState(initialProjectName);
   const [isEditingProject, setIsEditingProject] = useState(false);
   const [isManualEditing, setIsManualEditing] = useState(false);
-  const [state, setState] = useState<CartPoleState>({ x: 0, x_dot: 0, theta: 0.1, theta_dot: 0 });
+  const [isCanvasLoaded, setIsCanvasLoaded] = useState(false);
+  
+  const [state, setState] = useState<CartPoleState>(() => ({
+    x: 0,
+    x_dot: 0,
+    theta: initialProjectName === 'Cruiser-v1' ? -999 : 0.1,
+    theta_dot: 0
+  }));
   const [isRunning, setIsRunning] = useState(false);
   const [steps, setSteps] = useState(0);
   const [reward, setReward] = useState(0);
@@ -166,8 +173,6 @@ export default function RLVisualizer3D({
         
         const next_x = x + tau * next_x_dot;
         
-        if (Math.abs(next_x) > 2000) setIsRunning(false);
-        
         setSteps(s => s + 1);
         setReward(r => r + 1);
 
@@ -194,10 +199,6 @@ export default function RLVisualizer3D({
       const next_theta = theta + tau * theta_dot;
       const next_theta_dot = theta_dot + tau * thetaacc;
 
-      if (Math.abs(next_x) > 2.4 || Math.abs(next_theta) > 0.209) {
-        setIsRunning(false);
-      }
-
       setSteps(s => s + 1);
       setReward(r => r + 1);
 
@@ -209,6 +210,20 @@ export default function RLVisualizer3D({
       };
     });
   };
+
+  // Termination check effect
+  useEffect(() => {
+    if (!isRunning) return;
+    
+    const isCruiser = projectName === 'Cruiser-v1';
+    if (isCruiser) {
+      if (Math.abs(state.x) > 2000) setIsRunning(false);
+    } else {
+      if (Math.abs(state.x) > 2.4 || Math.abs(state.theta) > 0.209) {
+        setIsRunning(false);
+      }
+    }
+  }, [state.x, state.theta, isRunning, projectName]);
 
   // Simulation loop
   useEffect(() => {
@@ -334,19 +349,32 @@ export default function RLVisualizer3D({
             onClick={reset}
             className="bg-nvidia-light-gray border-nvidia-border hover:bg-nvidia-border hover:text-white text-gray-300 text-[10px] md:text-xs h-8 px-3 md:px-4 shrink-0"
           >
-            重置
+            重新开始
           </Button>
           <Button 
             onClick={() => setIsRunning(!isRunning)}
             className="nvidia-btn-primary h-8 px-4 md:px-6 shrink-0 text-[10px] md:text-xs"
           >
-            {isRunning ? '暂停' : '开始'}
+            {isRunning ? '暂停' : (steps > 0 ? '继续' : '开始')}
           </Button>
         </div>
       </div>
 
       <div className="relative h-[300px] md:h-[500px] w-full bg-black rounded-sm overflow-hidden border border-nvidia-border group">
-        <Canvas shadows>
+        {!isCanvasLoaded && (
+          <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-nvidia-dark animate-pulse">
+            <Zap className="w-8 h-8 text-nvidia-green mb-2 animate-bounce" />
+            <span className="text-nvidia-green font-mono text-[10px] uppercase tracking-widest">
+              Initializing Engine...
+            </span>
+          </div>
+        )}
+        
+        <Canvas 
+          shadows 
+          onCreated={() => setIsCanvasLoaded(true)}
+          gl={{ antialias: true, powerPreference: "high-performance" }}
+        >
           <PerspectiveCamera 
             makeDefault 
             position={viewMode === '3d' ? [5, 3, 8] : [0, 1, 10]} 
@@ -391,17 +419,6 @@ export default function RLVisualizer3D({
         <div className="absolute bottom-4 right-4 text-[10px] text-gray-500 font-mono">
           NVIDIA OMNIRL KERNEL v1.0.4
         </div>
-
-        {!isRunning && steps > 0 && (
-          <div className="absolute inset-0 flex items-center justify-center bg-black/40 backdrop-blur-sm z-10">
-            <div className="text-center">
-              <h3 className="text-2xl font-bold text-white mb-2">Episode Finished</h3>
-              <Button onClick={reset} className="nvidia-btn-primary">
-                Try Again
-              </Button>
-            </div>
-          </div>
-        )}
       </div>
     </div>
   );

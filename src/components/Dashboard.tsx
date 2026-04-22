@@ -255,6 +255,7 @@ export default function Dashboard({
                 </div>
               </div>
               <RLVisualizer3D 
+                key={`overview-${currentProject}`}
                 initialProjectName={currentProject} 
                 projects={projects} 
                 onSaveProject={onSaveProject} 
@@ -362,7 +363,7 @@ export default function Dashboard({
                     <span className="text-gray-500 text-[10px] uppercase font-bold tracking-wider">当前加载模型:</span>
                     <div className="relative group">
                       <button className="text-yellow-500 font-mono text-sm flex items-center gap-1 hover:bg-yellow-500/10 px-2 py-1 rounded-sm transition-colors">
-                        {selectedModel || 'PPO_CartPole_v1'}
+                        {selectedModel || (currentProject === 'Cruiser-v1' ? 'Cruiser_Policy_v1' : 'PPO_CartPole_v1')}
                         <MoreVertical className="w-3 h-3 rotate-90" />
                       </button>
                       <div className="absolute top-full left-0 mt-1 w-48 bg-nvidia-gray border border-nvidia-border rounded-sm shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50">
@@ -389,6 +390,7 @@ export default function Dashboard({
               </div>
             </div>
             <RLVisualizer3D 
+              key={`simulation-${currentProject}`}
               initialProjectName={currentProject} 
               projects={projects} 
               onSaveProject={onSaveProject} 
