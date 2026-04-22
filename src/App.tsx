@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { AuthProvider, useAuth } from '@/hooks/useAuth';
 import Navbar from '@/components/Navbar';
 import Sidebar from '@/components/Sidebar';
@@ -23,6 +23,22 @@ function AppContent() {
   const [isGuest, setIsGuest] = useState(false);
   const [activeTab, setActiveTab] = useState('home');
   const [isAIAssistantOpen, setIsAIAssistantOpen] = useState(false);
+  const [projects, setProjects] = useState(() => {
+    const saved = localStorage.getItem('omnirl_projects');
+    return saved ? JSON.parse(saved) : ['Cruiser-v1', 'CartPole-v1', 'MountainCar-v0', 'Acrobot-v1', 'Pendulum-v1', 'BipedalWalker-v3'];
+  });
+  const [currentProject, setCurrentProject] = useState('Cruiser-v1');
+
+  useEffect(() => {
+    localStorage.setItem('omnirl_projects', JSON.stringify(projects));
+  }, [projects]);
+
+  const saveProject = (name: string) => {
+    if (name && !projects.includes(name)) {
+      setProjects(prev => [...prev, name]);
+    }
+    setCurrentProject(name);
+  };
 
   const showSidebar = user || isGuest;
 
@@ -39,6 +55,10 @@ function AppContent() {
             setActiveTab={setActiveTab} 
             isGuest={isGuest} 
             setIsGuest={setIsGuest} 
+            projects={projects}
+            onSaveProject={saveProject}
+            currentProject={currentProject}
+            onProjectChange={setCurrentProject}
           />
           
           {/* Squeeze Placeholder for AI Assistant Sidebar */}

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'motion/react';
-import { Brain, Mountain, Bot, Zap, Heart, MessageCircle, UploadCloud, MoreVertical } from 'lucide-react';
+import { Brain, Mountain, Bot, Zap, Heart, MessageCircle, UploadCloud, MoreVertical, ChevronDown, Save } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { cn } from '@/lib/utils';
 import AssetCard from './AssetCard';
@@ -11,6 +11,10 @@ interface DashboardProps {
   setActiveTab: (tab: string) => void;
   isGuest: boolean;
   setIsGuest: (v: boolean) => void;
+  projects: string[];
+  onSaveProject: (name: string) => void;
+  currentProject: string;
+  onProjectChange: (name: string) => void;
 }
 
 const tabTitles: Record<string, string> = {
@@ -48,7 +52,16 @@ const recentProjects = [
   { id: 'p3', name: '无人机室内避障', status: '已暂停', progress: 42, type: 'drone' },
 ];
 
-export default function Dashboard({ activeTab, setActiveTab, isGuest, setIsGuest }: DashboardProps) {
+export default function Dashboard({ 
+  activeTab, 
+  setActiveTab, 
+  isGuest, 
+  setIsGuest, 
+  projects, 
+  onSaveProject,
+  currentProject,
+  onProjectChange
+}: DashboardProps) {
   const { user, login } = useAuth();
   const [selectedRobot, setSelectedRobot] = useState<string | null>(null);
   const [selectedTerrain, setSelectedTerrain] = useState<string | null>(null);
@@ -220,14 +233,33 @@ export default function Dashboard({ activeTab, setActiveTab, isGuest, setIsGuest
 
             {/* Simulation Section (Active) */}
             <section>
-              <div className="flex items-center justify-between mb-6">
-                <h3 className="text-2xl font-bold">实时仿真演示</h3>
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-4">
+                <div className="flex items-center gap-4">
+                  <h3 className="text-2xl font-bold">实时仿真演示</h3>
+                  <div className="relative">
+                    <select 
+                      value={currentProject}
+                      onChange={(e) => onProjectChange(e.target.value)}
+                      className="bg-nvidia-light-gray border border-nvidia-border rounded-sm px-3 py-1 text-xs focus:outline-none focus:border-nvidia-green transition-colors appearance-none pr-8"
+                    >
+                      {projects.map(p => <option key={p} value={p}>{p}</option>)}
+                    </select>
+                    <div className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none text-gray-500">
+                      <ChevronDown className="w-3 h-3" />
+                    </div>
+                  </div>
+                </div>
                 <div className="flex items-center gap-2 text-xs text-nvidia-green font-mono">
                   <span className="w-2 h-2 rounded-full bg-nvidia-green animate-pulse" />
                   KERNEL ACTIVE
                 </div>
               </div>
-              <RLVisualizer3D />
+              <RLVisualizer3D 
+                initialProjectName={currentProject} 
+                projects={projects} 
+                onSaveProject={onSaveProject} 
+                onSelectProject={onProjectChange}
+              />
             </section>
           </div>
         );
@@ -343,20 +375,25 @@ export default function Dashboard({ activeTab, setActiveTab, isGuest, setIsGuest
                     </div>
                   </div>
                 </div>
-              </div>
-              
-              <div className="flex gap-4">
-                <div className="bg-nvidia-gray border border-nvidia-border px-3 py-1.5 rounded-sm">
-                  <p className="text-[8px] text-gray-500 uppercase font-bold">GPU</p>
-                  <p className="text-sm font-mono text-nvidia-green">42%</p>
-                </div>
-                <div className="bg-nvidia-gray border border-nvidia-border px-3 py-1.5 rounded-sm">
-                  <p className="text-[8px] text-gray-500 uppercase font-bold">FPS</p>
-                  <p className="text-sm font-mono text-nvidia-green">120</p>
+                
+                <div className="flex gap-4">
+                  <div className="bg-nvidia-gray border border-nvidia-border px-3 py-1.5 rounded-sm">
+                    <p className="text-[8px] text-gray-500 uppercase font-bold">GPU</p>
+                    <p className="text-sm font-mono text-nvidia-green">42%</p>
+                  </div>
+                  <div className="bg-nvidia-gray border border-nvidia-border px-3 py-1.5 rounded-sm">
+                    <p className="text-[8px] text-gray-500 uppercase font-bold">FPS</p>
+                    <p className="text-sm font-mono text-nvidia-green">120</p>
+                  </div>
                 </div>
               </div>
             </div>
-            <RLVisualizer3D />
+            <RLVisualizer3D 
+              initialProjectName={currentProject} 
+              projects={projects} 
+              onSaveProject={onSaveProject} 
+              onSelectProject={onProjectChange}
+            />
           </div>
         );
       case 'models':
