@@ -12,7 +12,7 @@ const tabTitles: Record<string, string> = {
   'home': '系统概览',
   'robots': '机器人资产',
   'terrains': '地形库',
-  'models': '模型库',
+  'models': '项目中心',
   'simulation': '实时仿真',
   'community': '社区分享',
   'settings': '系统设置'
@@ -22,6 +22,7 @@ function AppContent() {
   const { user, isLoginModalOpen, setLoginModalOpen } = useAuth();
   const [isGuest, setIsGuest] = useState(false);
   const [activeTab, setActiveTab] = useState('home');
+  const [navKey, setNavKey] = useState(0);
   const [isAIAssistantOpen, setIsAIAssistantOpen] = useState(false);
   const [projects, setProjects] = useState(() => {
     const saved = localStorage.getItem('omnirl_projects');
@@ -40,11 +41,16 @@ function AppContent() {
     setCurrentProject(name);
   };
 
+  const handleSetActiveTab = (tab: string) => {
+    setActiveTab(tab);
+    setNavKey(prev => prev + 1);
+  };
+
   const showSidebar = user || isGuest;
 
   return (
     <div className="flex flex-col-reverse md:flex-row h-screen bg-nvidia-dark text-white font-sans overflow-hidden">
-      {showSidebar && <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} />}
+      {showSidebar && <Sidebar activeTab={activeTab} setActiveTab={handleSetActiveTab} />}
       
       <div className="flex-1 flex flex-col overflow-hidden">
         {showSidebar && <Navbar title={tabTitles[activeTab] || activeTab.toUpperCase()} />}
@@ -52,7 +58,8 @@ function AppContent() {
         <div className="flex-1 flex overflow-hidden relative">
           <Dashboard 
             activeTab={activeTab} 
-            setActiveTab={setActiveTab} 
+            setActiveTab={handleSetActiveTab} 
+            navKey={navKey}
             isGuest={isGuest} 
             setIsGuest={setIsGuest} 
             projects={projects}

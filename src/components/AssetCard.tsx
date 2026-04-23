@@ -8,9 +8,10 @@ interface AssetCardProps {
   type: 'robot' | 'terrain' | 'model';
   onApply: (item: any) => void;
   onAction: (action: string, item: any) => void;
+  onViewDetail?: (item: any) => void;
 }
 
-export default function AssetCard({ item, type, onApply, onAction }: AssetCardProps) {
+export default function AssetCard({ item, type, onApply, onAction, onViewDetail }: AssetCardProps) {
   const [pressProgress, setPressProgress] = useState(0);
   const [showActions, setShowActions] = useState(false);
   const cardRef = useRef<HTMLDivElement>(null);
@@ -67,7 +68,7 @@ export default function AssetCard({ item, type, onApply, onAction }: AssetCardPr
       onMouseDown={handleMouseDown}
       onMouseUp={handleMouseUp}
       onMouseLeave={handleMouseUp}
-      onDoubleClick={() => onApply(item)}
+      onDoubleClick={() => onViewDetail ? onViewDetail(item) : onApply(item)}
     >
       {/* Progress Bar for Long Press */}
       <div 

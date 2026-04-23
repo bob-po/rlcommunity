@@ -11,7 +11,7 @@ export default function Sidebar({ activeTab, setActiveTab }: SidebarProps) {
     { id: 'home', icon: Home, label: '概览' },
     { id: 'robots', icon: Bot, label: '机器人' },
     { id: 'terrains', icon: Mountain, label: '地形' },
-    { id: 'models', icon: Brain, label: '模型' },
+    { id: 'models', icon: Brain, label: '项目' },
     { id: 'simulation', icon: PlayCircle, label: '仿真' },
     { id: 'community', icon: Users, label: '社区' },
     { id: 'settings', icon: Settings, label: '设置' },

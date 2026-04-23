@@ -2,7 +2,7 @@ import React, { useRef, useState, useEffect } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { OrbitControls, PerspectiveCamera, Environment, Grid, Float } from '@react-three/drei';
 import * as THREE from 'three';
-import { Play, Pause, RotateCcw, Zap, Box, Layers, Save, ChevronDown } from 'lucide-react';
+import { Play, Pause, RotateCcw, Zap, Box, Layers, Save, ChevronDown, AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
@@ -113,6 +113,7 @@ export default function RLVisualizer3D({
   const [isEditingProject, setIsEditingProject] = useState(false);
   const [isManualEditing, setIsManualEditing] = useState(false);
   const [isCanvasLoaded, setIsCanvasLoaded] = useState(false);
+  const [isContextLost, setIsContextLost] = useState(false);
   
   // Long press for editing project name
   const [longPressProgress, setLongPressProgress] = useState(0);
@@ -409,7 +410,7 @@ export default function RLVisualizer3D({
       </div>
 
       <div className="relative h-[300px] md:h-[500px] w-full bg-black rounded-sm overflow-hidden border border-nvidia-border group">
-        {!isCanvasLoaded && (
+        {!isCanvasLoaded && !isContextLost && (
           <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-nvidia-dark animate-pulse">
             <Zap className="w-8 h-8 text-nvidia-green mb-2 animate-bounce" />
             <span className="text-nvidia-green font-mono text-[10px] uppercase tracking-widest">
@@ -417,11 +418,35 @@ export default function RLVisualizer3D({
             </span>
           </div>
         )}
+
+        {isContextLost && (
+          <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-black/80 backdrop-blur-md">
+            <AlertTriangle className="w-10 h-10 text-yellow-500 mb-2" />
+            <p className="text-white text-sm font-bold mb-1">WebGL 上下文丢失</p>
+            <p className="text-gray-400 text-xs mb-4 text-center px-6">GPU 资源紧张或设备休眠导致，请尝试刷新页面。</p>
+            <Button onClick={() => window.location.reload()} className="nvidia-btn-primary h-8 px-4 text-xs font-bold">
+              刷新页面
+            </Button>
+          </div>
+        )}
         
         <Canvas 
-          shadows 
-          onCreated={() => setIsCanvasLoaded(true)}
-          gl={{ antialias: true, powerPreference: "high-performance" }}
+          shadows={{ type: 1 }} // Use PCFShadowMap explicitly to avoid deprecation warning
+          onCreated={(state) => {
+            setIsCanvasLoaded(true);
+            const gl = state.gl.getContext();
+            const handleContextLost = (e: Event) => {
+              e.preventDefault();
+              setIsContextLost(true);
+              setIsRunning(false);
+            };
+            gl.canvas.addEventListener('webglcontextlost', handleContextLost, false);
+          }}
+          gl={{ 
+            antialias: true, 
+            powerPreference: "high-performance",
+            preserveDrawingBuffer: true
+          }}
         >
           <PerspectiveCamera 
             makeDefault 
