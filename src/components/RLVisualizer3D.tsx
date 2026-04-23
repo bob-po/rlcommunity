@@ -114,6 +114,41 @@ export default function RLVisualizer3D({
   const [isManualEditing, setIsManualEditing] = useState(false);
   const [isCanvasLoaded, setIsCanvasLoaded] = useState(false);
   
+  // Long press for editing project name
+  const [longPressProgress, setLongPressProgress] = useState(0);
+  const longPressTimer = useRef<NodeJS.Timeout | null>(null);
+  const progressTimer = useRef<NodeJS.Timeout | null>(null);
+  
+  const handleLongPressStart = () => {
+    if (isManualEditing) return;
+    
+    setLongPressProgress(0);
+    const startTime = Date.now();
+    const duration = 800; // 0.8s
+    
+    progressTimer.current = setInterval(() => {
+      const elapsed = Date.now() - startTime;
+      const progress = Math.min((elapsed / duration) * 100, 100);
+      setLongPressProgress(progress);
+      
+      if (progress >= 100) {
+        if (progressTimer.current) clearInterval(progressTimer.current);
+      }
+    }, 16);
+    
+    longPressTimer.current = setTimeout(() => {
+      setIsEditingProject(true);
+      setLongPressProgress(0);
+      if (progressTimer.current) clearInterval(progressTimer.current);
+    }, duration);
+  };
+  
+  const handleLongPressEnd = () => {
+    if (longPressTimer.current) clearTimeout(longPressTimer.current);
+    if (progressTimer.current) clearInterval(progressTimer.current);
+    setLongPressProgress(0);
+  };
+
   const [state, setState] = useState<CartPoleState>(() => ({
     x: 0,
     x_dot: 0,
@@ -272,6 +307,7 @@ export default function RLVisualizer3D({
                   type="text"
                   value={projectName}
                   onChange={(e) => setProjectName(e.target.value)}
+                  onBlur={() => setIsManualEditing(false)}
                   onKeyDown={(e) => {
                     if (e.key === 'Enter') {
                       setIsManualEditing(false);
@@ -281,18 +317,30 @@ export default function RLVisualizer3D({
                   className="bg-nvidia-dark border-b border-nvidia-green text-base md:text-lg font-bold outline-none text-white w-full max-w-[200px]"
                 />
               ) : (
-                <span 
+                <div 
+                  className="relative flex flex-col"
+                  onMouseDown={handleLongPressStart}
+                  onMouseUp={handleLongPressEnd}
+                  onMouseLeave={handleLongPressEnd}
+                  onTouchStart={handleLongPressStart}
+                  onTouchEnd={handleLongPressEnd}
                   onDoubleClick={() => setIsEditingProject(true)}
-                  onClick={() => {
-                    if (isEditingProject) setIsManualEditing(true);
-                  }}
-                  className={cn(
-                    "text-base md:text-lg font-bold transition-colors",
-                    isEditingProject ? "text-nvidia-green" : "group-hover:text-nvidia-green"
-                  )}
                 >
-                  {projectName}
-                </span>
+                  <span 
+                    onClick={() => {
+                      if (isEditingProject) setIsManualEditing(true);
+                    }}
+                    className={cn(
+                      "text-base md:text-lg font-bold transition-colors",
+                      isEditingProject ? "text-nvidia-green" : "group-hover:text-nvidia-green"
+                    )}
+                  >
+                    {projectName}
+                  </span>
+                  {longPressProgress > 0 && (
+                    <div className="absolute -bottom-1 left-0 h-0.5 bg-nvidia-green transition-all" style={{ width: `${longPressProgress}%` }} />
+                  )}
+                </div>
               )}
               
               {isEditingProject && (
